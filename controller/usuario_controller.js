@@ -1,5 +1,6 @@
 const usuarioRepository = require('../repository/usuario_repository');
 
+const jwt = require('jsonwebtoken');
 
 exports.listar = (req, res) => {    
     usuarioRepository.listar((err, listaUsuarios) => {
@@ -77,7 +78,11 @@ exports.validarUsuario = (req, res) =>
             }
             else if(usuario) {
                 if(usuario.senha == userLogin.senha) {
-                    res.status(201).json({"validado":true});
+                    const token = jwt.sign({
+                        id: usuario.id,
+                        nome: usuario.nome
+                    }, "Sen@crs2021", { expiresIn: '1h'});
+                    res.status(201).json({"token":token});
                 }
                 else {
                     res.status(401).json({msg:"Senha invalida"});
@@ -90,5 +95,16 @@ exports.validarUsuario = (req, res) =>
     }
     else {
         res.status(401).json("Usuario ou senha invalidos");
+    }
+}
+
+
+exports.validarToken = (req, res, next) => {
+    const token = req.get('Authorization');
+    if(token) {
+        next();
+    }
+    else {
+        res.status(403).json({erro:"Nao tem token de acesso"});
     }
 }
