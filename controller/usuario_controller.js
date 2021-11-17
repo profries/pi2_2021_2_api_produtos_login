@@ -102,7 +102,16 @@ exports.validarUsuario = (req, res) =>
 exports.validarToken = (req, res, next) => {
     const token = req.get('Authorization');
     if(token) {
-        next();
+        jwt.verify(token, "Sen@crs2021", (err, payload) => {
+            if(err) {
+                res.status(403).json({erro:"Nao tem token de acesso"});
+            }
+            else {
+                console.log("ID do usuario: "+payload.id);
+                next();
+            }
+        })
+        
     }
     else {
         res.status(403).json({erro:"Nao tem token de acesso"});
